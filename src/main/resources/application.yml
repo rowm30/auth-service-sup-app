@@ -1,0 +1,146 @@
+# src/main/resources/application.yml
+spring:
+  application:
+    name: auth-service
+  
+  profiles:
+    active: dev
+  
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_db?useSSL=false&serverTimezone=UTC
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
+            user-name-attribute: email
+
+# Add this to your existing application.yml
+app:
+  oauth2:
+    authorized-redirect-uris:
+      - http://localhost:3000/auth/callback
+      - http://localhost:8080/auth/callback
+      - https://yourapp.com/auth/callback
+    success-redirect-uri: http://localhost:3000/auth/callback
+    failure-redirect-uri: http://localhost:3000/auth/error
+    cookie-expire-seconds: 180
+    cookie-name: oauth2_auth_request
+
+# Also ensure you have the JWT configuration
+jwt:
+  secret: ${JWT_SECRET:mySecretKey1234567890123456789012345678901234567890}
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days in milliseconds
+  token-type: Bearer
+  token-prefix: "Bearer "
+  header-name: Authorization
+
+
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging
+logging:
+  level:
+    com.yourcompany.authservice: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_db_dev?createDatabaseIfNotExist=true&serverTimezone=UTC
+
+---
+# Test Profile
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:auth_db}?serverTimezone=UTC
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+logging:
+  level:
+    com.yourcompany.authservice: INFO
+    org.springframework.security: WARN
