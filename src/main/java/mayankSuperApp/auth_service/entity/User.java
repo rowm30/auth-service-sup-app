@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,6 +45,10 @@ public class User {
     @Column(name = "provider_id", nullable = false, length = 100)
     private String providerId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.USER;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -60,11 +65,17 @@ public class User {
 
     // Constructor for OAuth2 user creation
     public User(String name, String email, String pictureUrl, String provider, String providerId) {
+        this(name, email, pictureUrl, provider, providerId, Role.USER);
+    }
+
+    // Full constructor including role
+    public User(String name, String email, String pictureUrl, String provider, String providerId, Role role) {
         this.name = name;
         this.email = email;
         this.pictureUrl = pictureUrl;
         this.provider = provider;
         this.providerId = providerId;
+        this.role = role;
         this.isActive = true;
     }
 
@@ -86,6 +97,9 @@ public class User {
 
     public String getProviderId() { return providerId; }
     public void setProviderId(String providerId) { this.providerId = providerId; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
@@ -116,6 +130,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", provider='" + provider + '\'' +
+                ", role=" + role +
                 ", isActive=" + isActive +
                 ", createdAt=" + createdAt +
                 '}';
