@@ -120,6 +120,32 @@ public class UserService implements UserDetailsService {
         return false;
     }
 
+    /**
+     * Update the current user's profile information.
+     */
+    public UserDto updateUserProfile(Long userId, String name, String pictureUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        boolean changed = false;
+        if (name != null && !name.isBlank() && !name.equals(user.getName())) {
+            user.setName(name);
+            changed = true;
+        }
+
+        if (pictureUrl != null && !pictureUrl.equals(user.getPictureUrl())) {
+            user.setPictureUrl(pictureUrl);
+            changed = true;
+        }
+
+        if (changed) {
+            user = userRepository.save(user);
+            logger.info("Updated profile for user: {}", userId);
+        }
+
+        return convertToDto(user);
+    }
+
     @Transactional(readOnly = true)
     public Map<String, Long> getUserStatsByProvider() {
         List<User> allUsers = userRepository.findAll();

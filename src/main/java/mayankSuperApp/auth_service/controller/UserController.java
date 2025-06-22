@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import mayankSuperApp.auth_service.dto.AuthResponse;
 import mayankSuperApp.auth_service.dto.UserDto;
+import mayankSuperApp.auth_service.dto.UpdateUserRequest;
 import mayankSuperApp.auth_service.security.CustomUserPrincipal;
 import mayankSuperApp.auth_service.service.UserService;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,24 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
+    @Operation(summary = "Update current user profile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully",
+                    content = @Content(schema = @Schema(implementation = UserDto.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateCurrentUser(
+            @AuthenticationPrincipal CustomUserPrincipal currentUser,
+            @Valid @RequestBody UpdateUserRequest request) {
+
+        logger.info("Updating profile for user: {}", currentUser.getUsername());
+        UserDto updated = userService.updateUserProfile(currentUser.getUserId(), request.getName(), request.getPictureUrl());
+        return ResponseEntity.ok(updated);
+    }
+
     @Operation(summary = "Get user by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found",
@@ -71,6 +91,22 @@ public class UserController {
 
         logger.debug("Getting user by ID: {}", userId);
         UserDto userDto = userService.getUserById(userId);
+        return ResponseEntity.ok(userDto);
+    }
+
+    @Operation(summary = "Find user by email")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User found",
+                    content = @Content(schema = @Schema(implementation = UserDto.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    })
+    @GetMapping("/search")
+    public ResponseEntity<UserDto> searchUserByEmail(
+            @Parameter(description = "Email address", required = true)
+            @RequestParam String email) {
+        logger.debug("Searching user by email: {}", email);
+        UserDto userDto = userService.getUserByEmail(email);
         return ResponseEntity.ok(userDto);
     }
 

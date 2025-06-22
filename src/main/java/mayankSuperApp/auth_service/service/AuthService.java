@@ -68,4 +68,30 @@ public class AuthService {
             throw new AuthenticationException("Failed to refresh token: " + e.getMessage());
         }
     }
+
+    /**
+     * Handle login from mobile/Android clients using Google account data.
+     * The client is expected to perform the Google sign in and send the
+     * resulting user information to this service.
+     */
+    public AuthResponse mobileGoogleLogin(mayankSuperApp.auth_service.dto.MobileLoginRequest request) {
+        try {
+            User user = userService.processOAuthPostLogin(
+                    request.getEmail(),
+                    request.getName(),
+                    request.getPictureUrl(),
+                    "google",
+                    request.getProviderId()
+            );
+
+            JwtResponse jwtResponse = jwtService.generateTokenResponse(user);
+
+            logger.info("Mobile login successful for user: {}", request.getEmail());
+            return AuthResponse.success("Login successful", jwtResponse);
+
+        } catch (Exception e) {
+            logger.error("Mobile login error", e);
+            throw new AuthenticationException("Mobile login failed: " + e.getMessage());
+        }
+    }
 }
