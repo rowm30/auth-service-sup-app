@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import mayankSuperApp.auth_service.dto.AuthResponse;
+import mayankSuperApp.auth_service.dto.MobileLoginRequest;
 import mayankSuperApp.auth_service.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,21 @@ public class AuthController {
     public void authenticateWithGoogle(HttpServletResponse response) throws IOException {
         logger.info("Redirecting to Google OAuth2 authentication");
         response.sendRedirect("/oauth2/authorization/google");
+    }
+
+    @Operation(summary = "Login from Android/ mobile client using Google account")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    })
+    @PostMapping("/mobile/google")
+    public ResponseEntity<AuthResponse> mobileGoogleLogin(
+            @Valid @RequestBody MobileLoginRequest request) {
+
+        AuthResponse response = authService.mobileGoogleLogin(request);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Validate JWT token")
