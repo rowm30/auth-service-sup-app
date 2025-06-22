@@ -3,6 +3,7 @@ package mayankSuperApp.auth_service.service;
 
 import mayankSuperApp.auth_service.dto.UserDto;
 import mayankSuperApp.auth_service.entity.User;
+import mayankSuperApp.auth_service.entity.Role;
 import mayankSuperApp.auth_service.exception.ResourceNotFoundException;
 import mayankSuperApp.auth_service.repository.UserRepository;
 import mayankSuperApp.auth_service.security.CustomUserPrincipal;
@@ -69,7 +70,7 @@ public class UserService implements UserDetailsService {
             return user;
         } else {
             // Create new user
-            User newUser = new User(name, email, picture, provider, providerId);
+            User newUser = new User(name, email, picture, provider, providerId, Role.USER);
             User savedUser = userRepository.save(newUser);
 
             logger.info("Created new user: {}", email);
