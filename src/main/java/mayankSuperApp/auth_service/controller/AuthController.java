@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import mayankSuperApp.auth_service.dto.AuthResponse;
+import mayankSuperApp.auth_service.dto.GoogleSignInRequest;
 import mayankSuperApp.auth_service.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,5 +115,16 @@ public class AuthController {
     @GetMapping("/health")
     public ResponseEntity<AuthResponse> healthCheck() {
         return ResponseEntity.ok(AuthResponse.success("Authentication service is healthy"));
+    }
+
+    @Operation(summary = "Sign-in from Android (Google ID-token → JWT)")
+    @PostMapping("/google/signin")
+    public ResponseEntity<AuthResponse> signInWithGoogle(
+            @Valid @RequestBody GoogleSignInRequest request) {
+
+        AuthResponse resp = authService.authenticateWithGoogle(request.getIdToken());
+        return resp.isSuccess()
+                ? ResponseEntity.ok(resp)
+                : ResponseEntity.status(401).body(resp);
     }
 }

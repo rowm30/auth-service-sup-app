@@ -8,7 +8,15 @@ import mayankSuperApp.auth_service.exception.AuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import java.util.Collections;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -23,6 +31,9 @@ public class AuthService {
         this.userService = userService;
         this.jwtService = jwtService;
     }
+
+    @Value("${google.client-id}")
+    private String googleClientId;
 
     public AuthResponse validateToken(String token) {
         try {
@@ -66,6 +77,38 @@ public class AuthService {
         } catch (Exception e) {
             logger.error("Token refresh error", e);
             throw new AuthenticationException("Failed to refresh token: " + e.getMessage());
+        }
+    }
+
+    public AuthResponse authenticateWithGoogle(String idTokenString) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken == null) {
+                return AuthResponse.error("Invalid ID token", "INVALID_ID_TOKEN");
+            }
+
+            Payload p = idToken.getPayload();
+            String email   = p.getEmail();
+            String name    = (String) p.get("name");
+            String picture = (String) p.get("picture");
+            String sub     = p.getSubject();          // Google UID
+
+            User user = userService.processOAuthPostLogin(
+                    email, name, picture, "google", sub);
+
+            JwtResponse jwt = jwtService.generateTokenResponse(user);
+            String refresh = jwtService.generateRefreshToken(email, user.getId());
+            jwt.setRefreshToken(refresh);
+
+            return AuthResponse.success("Authenticated", jwt);
+        } catch (Exception e) {
+            logger.error("Google sign-in failed", e);
+            return AuthResponse.error("Authentication failed", e.getMessage());
         }
     }
 }

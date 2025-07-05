@@ -23,6 +23,10 @@ public class JwtResponse {
     @Schema(description = "User information")
     private UserDto user;
 
+    @JsonProperty("refresh_token")
+    @Schema(description = "Refresh token (optional)")
+    private String refreshToken;
+
     // Constructors
     public JwtResponse() {}
 
@@ -44,4 +48,7 @@ public class JwtResponse {
 
     public UserDto getUser() { return user; }
     public void setUser(UserDto user) { this.user = user; }
+
+    public String getRefreshToken() { return refreshToken; }
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
 }

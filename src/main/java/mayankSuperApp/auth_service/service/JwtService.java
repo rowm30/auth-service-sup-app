@@ -121,4 +121,10 @@ public class JwtService {
             return null;
         }
     }
+
+
+
+    public String generateRefreshToken(String email, Long userId) {
+        return jwtUtil.generateRefreshToken(email, userId);
+    }
 }
