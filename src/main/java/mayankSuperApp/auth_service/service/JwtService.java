@@ -27,10 +27,12 @@ public class JwtService {
      */
     public JwtResponse generateTokenResponse(User user) {
         try {
+            String role = "ROLE_USER";
             String accessToken = jwtUtil.generateToken(
                     user.getEmail(),
                     user.getId(),
-                    user.getName()
+                    user.getName(),
+                    role
             );
             long expiresIn = jwtUtil.getExpirationTime() / 1_000; // seconds
 
@@ -40,7 +42,8 @@ public class JwtService {
                     user.getEmail(),
                     user.getPictureUrl(),
                     user.getProvider(),
-                    user.getCreatedAt()
+                    user.getCreatedAt(),
+                    role
             );
 
             logger.info("Generated JWT token for user: {}", user.getEmail());

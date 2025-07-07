@@ -31,11 +31,12 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email, Long userId, String name) {
+    public String generateToken(String email, Long userId, String name, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("name", name);
         claims.put("email", email);
+        claims.put("role", role);
         claims.put("type", "access");
 
         return createToken(claims, email, expiration);
