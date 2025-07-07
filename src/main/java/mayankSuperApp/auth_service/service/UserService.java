@@ -158,13 +158,15 @@ public class UserService implements UserDetailsService {
     }
 
     private UserDto convertToDto(User user) {
+        String role = "ROLE_USER";
         return new UserDto(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
                 user.getPictureUrl(),
                 user.getProvider(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                role
         );
     }
 }

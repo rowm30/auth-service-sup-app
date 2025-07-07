@@ -29,19 +29,23 @@ public class UserDto {
     @Schema(description = "OAuth provider", example = "google")
     private String provider;
 
+    @Schema(description = "User role", example = "ROLE_USER")
+    private String role;
+
     @Schema(description = "Account creation timestamp")
     private LocalDateTime createdAt;
 
     // Constructors
     public UserDto() {}
 
-    public UserDto(Long id, String name, String email, String pictureUrl, String provider, LocalDateTime createdAt) {
+    public UserDto(Long id, String name, String email, String pictureUrl, String provider, LocalDateTime createdAt, String role) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.pictureUrl = pictureUrl;
         this.provider = provider;
         this.createdAt = createdAt;
+        this.role = role;
     }
 
     // Getters and Setters
@@ -59,6 +63,9 @@ public class UserDto {
 
     public String getProvider() { return provider; }
     public void setProvider(String provider) { this.provider = provider; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
